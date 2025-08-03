@@ -11,7 +11,6 @@ import numpy.typing as npt
 import pandas as pd
 from openai import OpenAI
 
-
 class WorkerAgent(Protocol):
     description: str
     name: str
@@ -112,6 +111,7 @@ class KnowledgeAugmentedPromptAgent(WorkerAgent):
             ],
             temperature=0,
         )
+        print(f'Knowledge agents: \n\t{response.choices[0].message.content}')
         return response.choices[0].message.content
 
 
@@ -181,32 +181,49 @@ class RAGKnowledgePromptAgent:
         text = re.sub(r"\s+", " ", text).strip()
 
         if len(text) <= self.chunk_size:
-            return [{"chunk_id": 0, "text": text, "chunk_size": len(text)}]
+          return [{"chunk_id": 0, "text": text, "chunk_size": len(text)}]
 
         start, chunk_id = 0, 0
         chunks: list[dict[str, int | str]] = []
 
         while start < len(text):
             end = min(start + self.chunk_size, len(text))
-            if separator in text[start:end]:
+
+            # Check if remaining text is too small to be meaningful
+            remaining_text = len(text) - start
+            # Less than half chunk_size
+            if remaining_text < self.chunk_size // 2:  
+                chunks.append({
+                    "chunk_id": chunk_id,
+                    "text": text[start:],
+                    "chunk_size": remaining_text,
+                    "start_char": start,
+                    "end_char": len(text),
+                })
+                break
+        
+
+            if separator in text[start:end] and end < len(text):  # Don't break at the very end
                 end = start + text[start:end].rindex(separator) + len(separator)
 
-            chunks.append(
-                {
-                    "chunk_id": chunk_id,
-                    "text": text[start:end],
-                    "chunk_size": end - start,
-                    "start_char": start,
-                    "end_char": end,
-                }
-            )
+            chunks.append({
+                "chunk_id": chunk_id,
+                "text": text[start:end],
+                "chunk_size": end - start,
+                "start_char": start,
+                "end_char": end,
+            })
 
-            start = end - self.chunk_overlap
+            # Ensure we always move forward
+            next_start = end - self.chunk_overlap
+            if next_start <= start:  # Prevent infinite loop
+                next_start = start + 1
+            
+            start = next_start
             chunk_id += 1
 
-        with open(
-            f"chunks-{self.unique_filename}", "w", newline="", encoding="utf-8"
-        ) as csvfile:
+        # Write to CSV immediately to avoid memory buildup
+        with open(f"chunks-{self.unique_filename}", "w", newline="", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=["text", "chunk_size"])
             writer.writeheader()
             for chunk in chunks:
@@ -276,7 +293,7 @@ class EvaluationAgent:
     worker_agent: WorkerAgent
     max_interactions: int = 10
 
-    def evaluate(self, initial_prompt: str) -> dict[str, str] | None:
+    def evaluate(self, initial_prompt: str) -> dict[str, Any] | None:
         # This method manages interactions between agents to achieve a solution.
         client = OpenAI(base_url=base_url, api_key=self.openai_api_key)
         prompt_to_evaluate = initial_prompt
@@ -313,7 +330,7 @@ class EvaluationAgent:
             if response.choices[0].message.content is None:
                 return None
             evaluation = response.choices[0].message.content.strip()
-            print(f"Evaluator Agent Evaluation:\n{evaluation}")
+            print(f"Evaluator Agent Evaluation:\n\t{evaluation}")
 
             print(" Step 3: Check if evaluation is positive")
             if evaluation.lower().startswith("yes"):
@@ -334,12 +351,12 @@ class EvaluationAgent:
                 if response.choices[0].message.content is None:
                     return None
                 evaluation = response.choices[0].message.content.strip()
-                print(f"Instructions to fix:\n{instructions}")
+                print(f"Instructions to fix:\n\t{instructions}")
 
                 print(" Step 5: Send feedback to worker agent for refinement")
                 prompt_to_evaluate = (
-                    f"The original prompt was: {initial_prompt}\n"
-                    f"The response to that prompt was: {response_from_worker}\n"
+                    f"The original prompt was: \n\t{initial_prompt}\n"
+                    f"The response to that prompt was: \n\t{response_from_worker}\n"
                     f"It has been evaluated as incorrect.\n"
                     f"Make only these corrections, do not alter content validity: {instructions}"
                 )
