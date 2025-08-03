@@ -24,4 +24,4 @@ print(direct_agent_response)
 
 # TODO: 5 - Print an explanatory message describing the knowledge source used by the agent to generate the response
 print()
-print("Knowledge Source: This response was generated using OpenAI's gpt-4o-mini model, which draws from its training data containing information up to its knowledge cutoff date.")
+print("Knowledge Source: This response was generated using OpenAI's model, which draws from its training data containing information up to its knowledge cutoff date.")
