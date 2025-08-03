@@ -13,7 +13,8 @@ openai_api_key = os.getenv("OPENAI_API_KEY") or ""
 persona = "You are a college professor, your answer always starts with: Dear students,"
 # TODO: 2 - Instantiate RAGKnowledgePromptAgent
 RAG_knowledge_prompt_agent = RAGKnowledgePromptAgent(
-    openai_api_key=openai_api_key, persona=persona
+    openai_api_key=openai_api_key, persona=persona,
+
 )
 
 knowledge_text = """
