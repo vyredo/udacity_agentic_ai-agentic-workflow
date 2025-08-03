@@ -58,7 +58,7 @@ product_manager_knowledge_agent = KnowledgeAugmentedPromptAgent(
     name="Product Manager",
     description="Defines user stories for a product based on product specifications",
     openai_api_key=openai_api_key,
-    persona=persona_product_manager,
+    persona="You are an evaluation agent that checks the answers of other worker agents",
     knowledge=knowledge_product_manager,
 )
 
@@ -186,7 +186,7 @@ def product_manager_support_function(query: str):
 
     # Evaluate the response
     evaluated_response = product_manager_evaluation_agent.evaluate(response)
-    return evaluated_response
+    return evaluated_response['final_response'] 
 
 
 def program_manager_support_function(query: str):
@@ -197,7 +197,7 @@ def program_manager_support_function(query: str):
         return ""
     # Evaluate the response
     evaluated_response = program_manager_evaluation_agent.evaluate(response)
-    return evaluated_response
+    return evaluated_response['final_response'] 
 
 
 def development_engineer_support_function(query: str):
@@ -209,7 +209,7 @@ def development_engineer_support_function(query: str):
 
     # Evaluate the response
     evaluated_response = development_engineer_evaluation_agent.evaluate(response)
-    return evaluated_response
+    return evaluated_response['final_response'] 
 
 
 # Run the workflow
