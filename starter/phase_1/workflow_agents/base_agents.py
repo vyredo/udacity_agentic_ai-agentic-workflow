@@ -25,7 +25,7 @@ def noop(x: Any):
 
 
 base_url = "https://openai.vocareum.com/v1"
-model = "gpt-4o-mini"
+model = "gpt-3.5-turbo"
 
 
 @dataclass
@@ -112,6 +112,7 @@ class KnowledgeAugmentedPromptAgent(WorkerAgent):
             ],
             temperature=0,
         )
+        print(f'Knowledge agents: \n\t{response.choices[0].message.content}')
         return response.choices[0].message.content
 
 
@@ -292,7 +293,7 @@ class EvaluationAgent:
             print(f"Prompt:\n{prompt_to_evaluate}")
             # TODO: 3 - Obtain a response from the worker agent
             response_from_worker = self.worker_agent.respond(prompt_to_evaluate)
-            print(f"Worker Agent Response:\n{response_from_worker}")
+            print(f"Worker Agent Response:\n\t{response_from_worker}")
 
             print(" Step 2: Evaluator agent judges the response")
             eval_prompt = (
@@ -313,7 +314,7 @@ class EvaluationAgent:
             if response.choices[0].message.content is None:
                 return None
             evaluation = response.choices[0].message.content.strip()
-            print(f"Evaluator Agent Evaluation:\n{evaluation}")
+            print(f"Evaluator Agent Evaluation:\n\t{evaluation}")
 
             print(" Step 3: Check if evaluation is positive")
             if evaluation.lower().startswith("yes"):
@@ -334,12 +335,12 @@ class EvaluationAgent:
                 if response.choices[0].message.content is None:
                     return None
                 evaluation = response.choices[0].message.content.strip()
-                print(f"Instructions to fix:\n{instructions}")
+                print(f"Instructions to fix:\n\t{instructions}")
 
                 print(" Step 5: Send feedback to worker agent for refinement")
                 prompt_to_evaluate = (
-                    f"The original prompt was: {initial_prompt}\n"
-                    f"The response to that prompt was: {response_from_worker}\n"
+                    f"The original prompt was: \n\t{initial_prompt}\n"
+                    f"The response to that prompt was: \n\t{response_from_worker}\n"
                     f"It has been evaluated as incorrect.\n"
                     f"Make only these corrections, do not alter content validity: {instructions}"
                 )

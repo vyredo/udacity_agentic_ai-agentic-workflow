@@ -25,7 +25,7 @@ def noop(x: Any):
 
 
 base_url = "https://openai.vocareum.com/v1"
-model = "gpt-4o-mini"
+model = "gpt-3.5-turbo"
 
 
 @dataclass
@@ -276,7 +276,7 @@ class EvaluationAgent:
     worker_agent: WorkerAgent
     max_interactions: int = 10
 
-    def evaluate(self, initial_prompt: str) -> dict[str, Any] | None:
+    def evaluate(self, initial_prompt: str) -> dict[str, str] | None:
         # This method manages interactions between agents to achieve a solution.
         client = OpenAI(base_url=base_url, api_key=self.openai_api_key)
         prompt_to_evaluate = initial_prompt
@@ -292,7 +292,7 @@ class EvaluationAgent:
             print(f"Prompt:\n{prompt_to_evaluate}")
             # TODO: 3 - Obtain a response from the worker agent
             response_from_worker = self.worker_agent.respond(prompt_to_evaluate)
-            print(f"Worker Agent Response:\n{response_from_worker}")
+            print(f"Worker Agent Response:\n\t{response_from_worker}")
 
             print(" Step 2: Evaluator agent judges the response")
             eval_prompt = (
