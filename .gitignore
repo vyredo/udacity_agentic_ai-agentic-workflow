@@ -3,4 +3,4 @@
 # udacity folder is virtual environment
 udacity
 
-.pyc
+*.pyc
