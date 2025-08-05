@@ -58,7 +58,7 @@ product_manager_knowledge_agent = KnowledgeAugmentedPromptAgent(
     name="Product Manager",
     description="Defines user stories for a product based on product specifications",
     openai_api_key=openai_api_key,
-    persona="You are an evaluation agent that checks the answers of other worker agents",
+    persona=persona_product_manager,
     knowledge=knowledge_product_manager,
 )
 
@@ -69,7 +69,7 @@ product_manager_knowledge_agent = KnowledgeAugmentedPromptAgent(
 # The evaluation_criteria should specify the expected structure for user stories (e.g., "As a [type of user], I want [an action or feature] so that [benefit/value].").
 product_manager_evaluation_agent = EvaluationAgent(
     openai_api_key=openai_api_key,
-    persona=persona_product_manager,
+    persona="You are an evaluation agent that checks the answers of other worker agents",
     evaluation_criteria="As a [type of user], I want [an action or feature] so that [benefit/value].",
     worker_agent=product_manager_knowledge_agent,
     max_interactions=10,
